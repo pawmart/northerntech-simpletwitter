@@ -1,0 +1,33 @@
+version: '3.4'
+
+services:
+
+    service:
+        image: rat4m3n/northerntech-simpletwitter:latest
+        container_name: northerntech-simpletwitter
+        ports:
+            - 6543:6543
+        environment:
+            NORTHTECH_DB_DATABASE: northerntech-simpletwitter-app
+            NORTHTECH_DB_HOST: host.docker.internal
+            NORTHTECH_DB_USER: root
+            NORTHTECH_DB_PASSWORD: example
+            NORTHTECH_DB_AUTH: admin
+        deploy:
+            replicas: 1
+            restart_policy:
+                condition: on-failure
+            placement:
+                constraints: [node.ip == 66.70.186.117]
+
+    mongo:
+        image: mongo:3.4-jessie
+        container_name: northerntech-mongo
+        ports:
+            - 27017:27017
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: example
+        deploy:
+            placement:
+                constraints: [node.ip == 66.70.186.117]

@@ -1,0 +1,198 @@
+basePath: /v1
+host: localhost:6543
+info: {title: Northern Tech Simple Twitter App - Pawel Martuszewski, version: '1'}
+produces: [application/vnd.api+json, application/json]
+schemes: [http]
+swagger: '2.0'
+
+paths:
+  /health:
+    get:
+      responses:
+        200:
+          description: Service health
+          schema: {$ref: '#/definitions/Health'}
+      summary: Fetch service health
+  /tweets:
+    get:
+      parameters:
+      - description: Filter by tag
+        in: query
+        items: {format: string, type: string}
+        name: filter[tag]
+        required: false
+        type: array
+      - description: Count
+        in: query
+        name: count
+        required: false
+        type: integer
+      - description: Year
+        in: query
+        name: year
+        required: false
+        type: integer
+      responses:
+        200:
+          description: List of tweet details
+          schema: {$ref: '#/definitions/TweetDetailsListResponse'}
+        500:
+          description: Fatal error
+          schema: {$ref: '#/definitions/ApiError'}
+      summary: List tweets
+    post:
+      consumes: [application/vnd.api+json, application/json]
+      parameters:
+      - in: body
+        name: Tweet creation request
+        schema: {$ref: '#/definitions/TweetCreation'}
+      responses:
+        201:
+          description: Tweet creation response
+          schema: {$ref: '#/definitions/TweetCreationResponse'}
+        400:
+          description: Tweet creation error
+          schema: {$ref: '#/definitions/ApiError'}
+        500:
+          description: Fatal error
+          schema: {$ref: '#/definitions/ApiError'}
+      summary: Create tweet
+    patch:
+      consumes: [application/vnd.api+json, application/json]
+      parameters:
+      - in: body
+        name: Tweet update request
+        schema: {$ref: '#/definitions/TweetUpdate'}
+      responses:
+        200:
+          description: Tweet update response
+        400:
+          description: Tweet update error
+          schema: {$ref: '#/definitions/ApiError'}
+        404:
+          description: Tweet update not found
+          schema: {$ref: '#/definitions/ApiError'}
+        500:
+          description: Fatal error
+          schema: {$ref: '#/definitions/ApiError'}
+      summary: Patch tweet
+  /tweets/{id}:
+    get:
+      parameters:
+      - {description: Tweet Id, format: uuid, in: path, name: id, required: true,
+        type: string}
+      responses:
+        200:
+          description: Tweet details
+          schema: {$ref: '#/definitions/TweetDetailsResponse'}
+        404:
+          description: Resource not found
+          schema: {$ref: '#/definitions/ApiError'}
+      summary: Fetch tweet
+    delete:
+      consumes: [application/vnd.api+json, application/json]
+      parameters:
+      - {description: Tweet Id, format: uuid, in: path, name: id, required: true,
+        type: string}
+      responses:
+        204:
+          description: Tweet deletion response
+        404:
+          description: Tweet deletion error
+          schema: {$ref: '#/definitions/ApiError'}
+      summary: Delete tweet
+
+definitions:
+  ApiError:
+    properties:
+      error_code: {type: string}
+      error_message: {type: string}
+    type: object
+
+  Health:
+    properties:
+      status:
+        description: Status of the service. Can either be `up` or `down`.
+        enum: [up, down]
+        example: up
+        type: string
+    type: object
+
+  Links:
+    properties:
+      first: {description: Link to the first resource in the list, example: 'http://localhost:6543/v1/api_name/resource_tag',
+        type: string}
+      last: {description: Link to the last resource in the list, example: 'http://localhost:6543/v1/api_name/resource_tag',
+        type: string}
+      next: {description: Link to the next resource in the list, example: 'http://localhost:6543/v1/api_name/resource_tag',
+        type: string}
+      prev: {description: Link to the previous resource in the list, example: 'http://localhost:6543/v1/api_name/resource_tag',
+        type: string}
+      self: {description: Link to this resource type, example: 'http://localhost:6543/v1/api_name/resource_tag',
+        type: string}
+    type: object
+
+  Tweet:
+    properties:
+      id:
+        description: Unique resource ID
+        example: 7826c3cb-d6fd-41d0-b187-dc23ba928772
+        pattern: ^[[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$
+        type: string
+      tag:
+        description: Name of the resource tag
+        example: text
+        pattern: '^[A-Z a-z_]*$'
+        type: string
+      created_on:
+        type: integer
+        x-nullable: true
+      modified_on:
+        type: integer
+        x-nullable: true
+      attributes:
+        properties:
+          message:
+            description: Tweet message
+            example: 'hello John'
+            pattern: '^[A-Z a-z_]*$'
+            type: string
+          user_id:
+            description: Unique ID of the user this resource is created by
+            example: ee2fb143-6dfe-4787-b183-ca8ddd4164d2
+            pattern: ^[[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$
+            type: string
+        required: [message]
+        type: object
+    required: [tag, attributes]
+    type: object
+
+  TweetCreation:
+    properties:
+      data: {$ref: '#/definitions/Tweet'}
+    type: object
+
+  TweetUpdate:
+    properties:
+      data: {$ref: '#/definitions/Tweet'}
+    type: object
+
+  TweetCreationResponse:
+    properties:
+      data: {$ref: '#/definitions/Tweet'}
+      links: {$ref: '#/definitions/Links'}
+    type: object
+
+  TweetDetailsListResponse:
+    properties:
+      data:
+        items: {$ref: '#/definitions/Tweet'}
+        type: array
+      links: {$ref: '#/definitions/Links'}
+    type: object
+
+  TweetDetailsResponse:
+    properties:
+      data: {$ref: '#/definitions/Tweet'}
+      links: {$ref: '#/definitions/Links'}
+    type: object
