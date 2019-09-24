@@ -1,4 +1,4 @@
-# northern.tech Tweeter App
+# northern.tech “Twitter” App
 
 I have chosen go lang as it seemed the most robust to write it with. Swagger go was choosen to allow RAD development for the purpose of this demo.
 
